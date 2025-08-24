@@ -1,5 +1,5 @@
 import express from "express";
-import { User } from "./schema.js";
+import { Todo, User } from "./schema.js";
 import mongoose from "mongoose";
 import dbConnect from "./dbConnect.js";
 const app = express();
@@ -144,13 +144,135 @@ app.delete("/users/:id", async (req, res) => {
 
 // Todos
 app.post("/todos", async (req, res) => {
-    
+  try {
+    const { title, user, completed } = req.body;
+
+    if (!title || !user) {
+      return res.status(400).json({
+        message: "Incomplete Fields",
+        success: false,
+      });
+    }
+
+    const todo = await Todo.create({
+      title,
+      user,
+    });
+
+    if (!todo) {
+      res.status(400).json({
+        message: "Failed to create todo",
+        success: false,
+      });
+    }
+
+    res.status(201).json({
+      message: "Todo created",
+      success: true,
+      todo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal error while creating todo",
+      success: false,
+    });
+  }
 });
 
-app.get("/todos/:id", async (req, res) => {});
+app.get("/todos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-app.put("/todos/:id", async (req, res) => {});
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
 
-app.delete("/todos/:id", async (req, res) => {});
+    const todo = await Todo.findById(id);
+    if (!todo) {
+      return res.status(404).json({
+        success: false,
+        message: "todo not found",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal error while getting todo",
+      success: false,
+    });
+  }
+});
+
+app.put("/todos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    const { title, completed } = req.body;
+    if (!title && completed === undefined) {
+      return res.status(400).json({
+        message: "Incomplete Fields",
+        success: false,
+      });
+    }
+    const updatedData = { title, completed };
+
+    const todo = await Todo.findByIdAndUpdate(id, updatedData, { new: true });
+    if (!todo) {
+      return res
+        .status(404)
+        .json({ success: false, message: "todo not found" });
+    }
+
+    res.json({
+      success: true,
+      todo,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal error while updating todo",
+      success: false,
+    });
+  }
+});
+
+app.delete("/todos/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    const todo = await Todo.findByIdAndDelete(id);
+    if (!todo) {
+      return res.status(404).json({
+        success: false,
+        message: "todo not found",
+      });
+    }
+    res.json({
+      success: true,
+      message: "todo deleted successfully",
+      todo,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Delete failed",
+    });
+  }
+});
 
 app.listen(3000);
