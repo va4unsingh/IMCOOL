@@ -1,7 +1,13 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import bcrypt from "bcryptjs";
 
-const userSchema = new mongoose.Schema(
+interface IUser extends Document {
+  name: string;
+  username: string;
+  password: string;
+}
+
+const userSchema = new mongoose.Schema<IUser>(
   {
     name: {
       type: String,
@@ -19,6 +25,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false,
     },
   },
   {
@@ -35,7 +42,13 @@ userSchema.pre("save", async function (next) {
 
 const User = mongoose.model("User", userSchema);
 
-const todoSchema = new mongoose.Schema(
+interface ITodo extends Document {
+  title: string;
+  completed: boolean;
+  user: mongoose.Types.ObjectId;
+}
+
+const todoSchema = new mongoose.Schema<ITodo>(
   {
     title: {
       type: String,
