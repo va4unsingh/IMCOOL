@@ -1,9 +1,11 @@
 import express from "express";
 import { User } from "./schema.js";
 import mongoose from "mongoose";
+import dbConnect from "./dbConnect.js";
 const app = express();
 app.use(express.json());
 
+dbConnect();
 // User routes
 app.post("/users", async (req, res) => {
   try {
@@ -119,7 +121,7 @@ app.delete("/users/:id", async (req, res) => {
       });
     }
 
-    const user = User.findByIdAndDelete(id);
+    const user = await User.findByIdAndDelete(id);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -141,10 +143,14 @@ app.delete("/users/:id", async (req, res) => {
 });
 
 // Todos
-app.post("/todos", async (req, res) => {});
+app.post("/todos", async (req, res) => {
+    
+});
 
 app.get("/todos/:id", async (req, res) => {});
 
 app.put("/todos/:id", async (req, res) => {});
 
 app.delete("/todos/:id", async (req, res) => {});
+
+app.listen(3000);
