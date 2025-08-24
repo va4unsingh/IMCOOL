@@ -197,6 +197,11 @@ app.get("/todos/:id", async (req, res) => {
         message: "todo not found",
       });
     }
+    res.status(200).json({
+      message: "got your todo",
+      success: true,
+      todo,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Internal error while getting todo",
